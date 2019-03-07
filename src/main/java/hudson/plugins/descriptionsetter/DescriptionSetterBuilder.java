@@ -23,11 +23,13 @@ public class DescriptionSetterBuilder extends Builder {
 
 	private final String regexp;
 	private final String description;
+	private final boolean useMultiLine;
 
 	@DataBoundConstructor
-	public DescriptionSetterBuilder(String regexp, String description) {
+	public DescriptionSetterBuilder(String regexp, String description, boolean useMultiLine) {
 		this.regexp = regexp;
 		this.description = Util.fixEmptyAndTrim(description);
+		this.useMultiLine = useMultiLine;
 	}
 
 	@Override
@@ -35,7 +37,7 @@ public class DescriptionSetterBuilder extends Builder {
 			BuildListener listener) throws InterruptedException {
 
 		return DescriptionSetterHelper.setDescription(build, listener, regexp,
-				description);
+				description, useMultiLine);
 	}
 
 	@Extension

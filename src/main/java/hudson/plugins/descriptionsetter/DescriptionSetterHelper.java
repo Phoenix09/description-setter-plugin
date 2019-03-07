@@ -34,14 +34,14 @@ public class DescriptionSetterHelper {
 	 * @throws InterruptedException if the build is interrupted by the user.
 	 */
 	public static boolean setDescription(AbstractBuild<?, ?> build,
-			BuildListener listener, String regexp, String description)
+			BuildListener listener, String regexp, String description, boolean useMultiLine)
 			throws InterruptedException {
 
 		try {
 			Matcher matcher;
 			String result = null;
 
-			matcher = parseLog(build.getLogFile(), regexp);
+			matcher = parseLog(build.getLogFile(), regexp, useMultiLine);
 			if (matcher != null) {
 				result = getExpandedDescription(matcher, description);
 				result = build.getEnvironment(listener).expand(result);
@@ -70,7 +70,7 @@ public class DescriptionSetterHelper {
 		return true;
 	}
 
-	private static Matcher parseLog(File logFile, String regexp)
+	private static Matcher parseLog(File logFile, String regexp, boolean useMultiLine)
 			throws IOException, InterruptedException {
 
 		if (regexp == null) {
@@ -83,15 +83,27 @@ public class DescriptionSetterHelper {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(logFile));
-			String logContent = "";
-
-			while ((line = reader.readLine()) != null) {
-				logContent += line + "\n";
+			StringBuilder logContent = null;
+			if (useMultiLine) {
+				logContent = new StringBuilder();
 			}
 
-			Matcher matcher = pattern.matcher(logContent);
-			if (matcher.find()) {
-				return matcher;
+			while ((line = reader.readLine()) != null) {
+				if (useMultiLine) {
+					logContent.append(line + "\n");
+				} else {
+					Matcher matcher = pattern.matcher(line);
+					if (matcher.find()) {
+						return matcher;
+					}
+				}
+			}
+
+			if (useMultiLine) {
+				Matcher matcher = pattern.matcher(logContent);
+				if (matcher.find()) {
+					return matcher;
+				}
 			}
 		} finally {
 			if (reader != null) {

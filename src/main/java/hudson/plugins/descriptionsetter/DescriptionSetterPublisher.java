@@ -39,6 +39,7 @@ public class DescriptionSetterPublisher extends Recorder implements
 
 	private final String descriptionForFailed;
 	private final boolean setForMatrix;
+	private final boolean useMultiLine;
 
 	@Deprecated
 	private transient boolean setForFailed = false;
@@ -49,12 +50,13 @@ public class DescriptionSetterPublisher extends Recorder implements
 	@DataBoundConstructor
 	public DescriptionSetterPublisher(String regexp, String regexpForFailed,
 			String description, String descriptionForFailed,
-			boolean setForMatrix) {
+			boolean setForMatrix, boolean useMultiLine) {
 		this.regexp = regexp;
 		this.regexpForFailed = regexpForFailed;
 		this.description = Util.fixEmptyAndTrim(description);
 		this.descriptionForFailed = Util.fixEmptyAndTrim(descriptionForFailed);
 		this.setForMatrix = setForMatrix;
+		this.useMultiLine = useMultiLine;
 	}
 
 	public BuildStepMonitor getRequiredMonitorService() {
@@ -69,13 +71,13 @@ public class DescriptionSetterPublisher extends Recorder implements
 				&& build.getResult().isWorseThan(Result.UNSTABLE);
 		return DescriptionSetterHelper.setDescription(build, listener,
 				useUnstable ? regexpForFailed : regexp,
-				useUnstable ? descriptionForFailed : description);
+				useUnstable ? descriptionForFailed : description, useMultiLine);
 	}
 
 	private Object readResolve() throws ObjectStreamException {
 		if (explicitNotRegexp) {
 			return new DescriptionSetterPublisher(null, null, regexp,
-					setForFailed ? regexpForFailed : null, false);
+					setForFailed ? regexpForFailed : null, false, useMultiLine);
 		} else {
 			return this;
 		}
@@ -164,5 +166,4 @@ public class DescriptionSetterPublisher extends Recorder implements
 	public boolean isSetForMatrix() {
 		return setForMatrix;
 	}
-
 }
